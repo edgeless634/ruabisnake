@@ -8,7 +8,7 @@ dire=1
 #右 下 左 上
 di=[0,1,0,-1] 
 dj=[1,0,-1,0]
-mplength,mpwidth=12,12
+mplength,mpwidth=16,16
 applei,applej=4,4
 mpchar="口回田果　"
 showMpTime=0 #地图刷新的最短时间
@@ -103,7 +103,7 @@ def autoChangeDirection():
     while len(stack) !=0:
         yield stack[-1]
         del stack[-1]
-
+"""
 direlist=[]
 def changeDirection():
     global direlist
@@ -128,7 +128,7 @@ def changeDirection():
             return stallForTime()
     del direlist[0]
     return direlist[0]
-"""
+
 def putApple():
     global applei,applej
     applei,applej=random.randint(1,mplength),random.randint(1,mpwidth)
@@ -137,7 +137,7 @@ def putApple():
 
 
     
-def startgame():
+def startGame():
     printmp()
     while True:
         tstart=time.time()
@@ -149,7 +149,7 @@ def startgame():
 GAME OVER
 The length of snake is {len(snake)} 
             """)
-            exit(0)
+            return
         if nxti==applei and nxtj==applej:
             putApple()
         else:
@@ -158,4 +158,17 @@ The length of snake is {len(snake)}
         printmp()
         time.sleep(showMpTime+time.time()-tstart)
 
-startgame()
+#startGame()
+
+
+gameCount=0
+totalLength=0
+while True:
+    startGame()
+    totalLength+=len(snake)
+    gameCount+=1
+    print(f"已经进行了{gameCount}局,平均长度是{totalLength/gameCount}")
+    snake=[(3,1),(2,1),(1,1)]
+    dire=1
+    applei,applej=4,4
+    time.sleep(3)
