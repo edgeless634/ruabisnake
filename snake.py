@@ -5,9 +5,10 @@ import time
 import random
 snake=[(3,1),(2,1),(1,1)]
 dire=1
-di=[0,1,0,-1]
+#右 下 左 上
+di=[0,1,0,-1] 
 dj=[1,0,-1,0]
-mplength,mpwidth=15,15
+mplength,mpwidth=12,12
 applei,applej=4,4
 mpchar="口回田果　"
 showMpTime=0 #地图刷新的最短时间
@@ -136,24 +137,25 @@ def putApple():
 
 
     
-
-printmp()
-while True:
-    tstart=time.time()
-    dire=changeDirection()
-    i,j=snake[0]
-    nxti,nxtj=i+di[dire],j+dj[dire]
-    if mptotype(nxti,nxtj)<3 and snake[-1]!=(nxti,nxtj):
-        print(f"""
+def startgame():
+    printmp()
+    while True:
+        tstart=time.time()
+        dire=changeDirection()
+        i,j=snake[0]
+        nxti,nxtj=i+di[dire],j+dj[dire]
+        if mptotype(nxti,nxtj)<3 and snake[-1]!=(nxti,nxtj):
+            print(f"""
 GAME OVER
 The length of snake is {len(snake)} 
-        """)
-        exit()
-    if snake[0][0]==applei and snake[0][1]==applej:
-        putApple()
-    else:
-        del snake[-1]
-    snake.insert(0,(nxti,nxtj))
-    printmp()
-    time.sleep(showMpTime+time.time()-tstart)
+            """)
+            exit(0)
+        if nxti==applei and nxtj==applej:
+            putApple()
+        else:
+            del snake[-1]
+        snake.insert(0,(nxti,nxtj))
+        printmp()
+        time.sleep(showMpTime+time.time()-tstart)
 
+startgame()
