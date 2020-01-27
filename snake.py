@@ -5,13 +5,17 @@ import time
 import random
 snake=[(3,1),(2,1),(1,1)]
 dire=1
+diretohanzi="右下左上"
 #右 下 左 上
 di=[0,1,0,-1] 
 dj=[1,0,-1,0]
-mplength,mpwidth=16,16
+mplength,mpwidth=10,10
 applei,applej=4,4
-mpchar="口回田果　"
+#mpchar="口回田果　"
+mpchar=["\033[42m　\033[0m","\033[45m　\033[0m","\033[44m　\033[0m","\033[43m　\033[0m","\033[47m　\033[0m"]
 showMpTime=0 #地图刷新的最短时间
+stallCalculateLength=3
+infinityModeSleepTime=3
 clearCommand="cls" if os.name=="nt" else "clear"
 
 def mptotype(i,j):
@@ -46,7 +50,7 @@ def stallForTime():
     基本思路:
     1.找到头部能够得到,且离尾部最近的身体
     2.计算那段身子到周围几个空位的距离
-    3.往离那段身子最远的空位走
+    3.往离那段身子最远的空位走(尽量贴墙)
     '''
     queue=[(0,0),snake[0]]
     queh=0
@@ -54,7 +58,7 @@ def stallForTime():
     mxtarget=0
     while queh<len(queue)-1:#找到头部能够得到,且离尾部最近的身体
         queh+=1
-        for i in range(0,4):
+        for i in range(4):
             nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
             if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
                 if (nxti,nxtj) in snake and mxtarget<snake.index((nxti,nxtj)):
@@ -69,22 +73,44 @@ def stallForTime():
     queh=0
     while queh<len(queue)-1:#计算那段身子到周围几个空位的距离
         queh+=1
-        for i in range(0,4):
+        for i in range(4):
             nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
             if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
                 continue
             queue.append((nxti,nxtj))
             dict[queue[-1]]=dict[queue[queh]]+1 
     k,kmax=-1,-1
-    for i in range(0,4):#往离那段身子最远的空位走
-        nxti,nxtj=snake[0][0]+di[i],snake[0][1]+dj[i]
-        if min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
-            continue
-        nxt=(nxti,nxtj)
-        if dict.get(nxt,0)>kmax:
-            kmax=dict.get(nxt,0)
-            k=i
-    return k
+    for i in dict.items():
+        blockedCount,isPath=0,False
+        for j in range(4):
+            nxti,nxtj=i[0][0]+di[j],i[0][1]+dj[j]
+            if mptotype(nxti,nxtj)==2 or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth:
+                blockedCount+=1
+                revnxti,revnxtj=i[0][0]-di[j],i[0][1]-dj[j]
+                if mptotype(revnxti,revnxtj)==2 or min(revnxti,revnxtj)<1 or revnxti>mplength or revnxtj>mpwidth:
+                    isPath=True
+        if blockedCount==1:
+            dict[i[0]]+=0.5
+        elif blockedCount==3:
+            dict[i[0]]=-1#进了必死
+        elif isPath:
+            dict[i[0]]-=0.5#有风险
+    fakeHead=snake[0]
+    vis=set(fakeHead)
+    while dict.get(fakeHead,2e8)>2 and len(vis)<=stallCalculateLength:
+        k,kmax=0,0
+        for i in range(4):
+            nxti,nxtj=fakeHead
+            nxti+=di[i]
+            nxtj+=dj[i]
+            if (nxti,nxtj) in dict and kmax<dict.get((nxti,nxtj),0) and (nxti,nxtj) not in vis:
+                kmax=dict.get((nxti,nxtj),0)
+                k=i
+        if kmax==0:
+            return
+        fakeHead=(fakeHead[0]+di[k],fakeHead[1]+dj[k])
+        vis.add(fakeHead)
+        yield k
 
 def autoChangeDirection():
     '''
@@ -147,9 +173,16 @@ def changeDirection():
         if len(direlist)>=1:
             return direlist[0]
         else:
-            return stallForTime()
-    del direlist[0]
-    return direlist[0]
+            g=stallForTime()
+            direlist=[i for i in g]
+            if len(direlist)>=1:
+                return direlist[0]
+            else:
+                return dire #两种方法都找不到路(没有路)
+    else:
+        del direlist[0]
+        return direlist[0]
+    
 
 def putApple():
     '''
@@ -164,6 +197,7 @@ def startGame():
     '''
     开始一局游戏
     '''
+    global dire
     printmp()
     while True:
         tstart=time.time()
@@ -197,11 +231,11 @@ def infinityMode():
         startGame()
         totalLength+=len(snake)
         gameCount+=1
-        print(f"已经进行了{gameCount}局,平均长度是{totalLength/gameCount}")
+        print(f"已经进行了{gameCount}局,蛇头向{diretohanzi[dire]},平均长度是{totalLength/gameCount}")
         snake=[(3,1),(2,1),(1,1)]
         dire=1
         applei,applej=4,4
-        time.sleep(3)
+        time.sleep(infinityModeSleepTime)
 
 #startGame()
 infinityMode()
