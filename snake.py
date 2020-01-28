@@ -10,8 +10,9 @@ di=[0,1,0,-1]
 dj=[1,0,-1,0]
 mplength,mpwidth=16,16
 applei,applej=4,4
-mpchar="口回田果　"
-showMpTime=0 #地图刷新的最短时间
+#mpchar="口回田果　"
+mpchar=["\033[1;42m　\033[0m","\033[1;45m　","\033[1;44m　","\033[1;43m　","\033[1;47m　"]
+showMpTime=0.016 #地图刷新的最短时间
 clearCommand="cls" if os.name=="nt" else "clear"
 
 def mptotype(i,j):
