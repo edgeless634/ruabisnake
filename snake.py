@@ -5,10 +5,11 @@ import time
 import random
 snake=[(3,1),(2,1),(1,1)]
 dire=1
+diretohanzi="右下左上"
 #右 下 左 上
 di=[0,1,0,-1] 
 dj=[1,0,-1,0]
-mplength,mpwidth=16,16
+mplength,mpwidth=10,10
 applei,applej=4,4
 #mpchar="口回田果　"
 mpchar=["\033[1;42m　\033[0m","\033[1;45m　","\033[1;44m　","\033[1;43m　","\033[1;47m　"]
@@ -36,13 +37,20 @@ def printmp():
     print(mpchar[0]*(mplength+2))
 
 def stallForTime():
+    '''
+    在够不到果子的时候苟命
+    基本思路:
+    1.找到头部能够得到,且离尾部最近的身体
+    2.计算那段身子到周围几个空位的距离
+    3.往离那段身子最远的空位走(尽量贴墙)
+    '''
     queue=[(0,0),snake[0]]
     queh=0
     target=(0,0)
     mxtarget=0
     while queh<len(queue)-1:
         queh+=1
-        for i in range(0,4):
+        for i in range(4):
             nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
             if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
                 if (nxti,nxtj) in snake and mxtarget<snake.index((nxti,nxtj)):
@@ -57,7 +65,7 @@ def stallForTime():
     queh=0
     while queh<len(queue)-1:
         queh+=1
-        for i in range(0,4):
+        for i in range(4):
             nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
             if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
                 continue
@@ -127,8 +135,10 @@ def changeDirection():
             return direlist[0]
         else:
             return stallForTime()
-    del direlist[0]
-    return direlist[0]
+    else:
+        del direlist[0]
+        return direlist[0]
+    
 
 def putApple():
     global applei,applej
@@ -139,6 +149,10 @@ def putApple():
 
     
 def startGame():
+    '''
+    开始一局游戏
+    '''
+    global dire
     printmp()
     while True:
         tstart=time.time()
@@ -161,15 +175,18 @@ The length of snake is {len(snake)}
 
 #startGame()
 
+def infinityMode():
+    gameCount=0
+    totalLength=0
+    global snake,applei,applej,dire
+    while True:
+        startGame()
+        totalLength+=len(snake)
+        gameCount+=1
+        print(f"已经进行了{gameCount}局,平均长度是{totalLength/gameCount}")
+        snake=[(3,1),(2,1),(1,1)]
+        dire=1
+        applei,applej=4,4
+        time.sleep(3)
 
-gameCount=0
-totalLength=0
-while True:
-    startGame()
-    totalLength+=len(snake)
-    gameCount+=1
-    print(f"已经进行了{gameCount}局,平均长度是{totalLength/gameCount}")
-    snake=[(3,1),(2,1),(1,1)]
-    dire=1
-    applei,applej=4,4
-    time.sleep(3)
+infinityMode()
