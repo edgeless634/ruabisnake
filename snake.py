@@ -12,9 +12,11 @@ dj=[1,0,-1,0]
 mplength,mpwidth=10,10
 applei,applej=4,4
 #mpchar="口回田果　"
-mpchar=["\033[1;42m　\033[0m","\033[1;45m　","\033[1;44m　","\033[1;43m　","\033[1;47m　"]
+mpchar=["\033[1;44m　\033[0m","\033[1;45m　","\033[1;42m　","\033[1;43m　","\033[1;47m　"]
 showMpTime=0.016 #地图刷新的最短时间
 clearCommand="cls" if os.name=="nt" else "clear"
+
+
 
 def mptotype(i,j):
     if (i,j) in snake:
@@ -83,29 +85,28 @@ def stallForTime():
     return k
 
 def autoChangeDirection():
-    queue=[(0,0),snake[0]]
+    vis=[(0,0),snake[0]]
     fa=[0,0]
     lastdire=[-1,-1]
     target=(applei,applej)
     queh=0
-    while queh<len(queue)-1:
+    while queh<len(vis)-1:
         queh+=1
-#        print(f"正在搜索{queue[queh]} 目标是{target[0]},{target[1]}")
         for i in range(0,4):
-            nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
-            if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+            nxti,nxtj=vis[queh][0]+di[i],vis[queh][1]+dj[i]
+            if (nxti,nxtj) in vis or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
                 continue
-            queue.append((nxti,nxtj))
+            vis.append((nxti,nxtj))
             fa.append(queh)
             lastdire.append(i)
-            if queue[-1]==target:
+            if vis[-1]==target:
                 break
-        if queue[-1]==target:
+        if vis[-1]==target:
             break
     else:
         return
     stack=[]
-    p=len(queue)-1
+    p=len(vis)-1
     while p>1:
         stack.append(lastdire[p])
         p=fa[p]
