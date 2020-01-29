@@ -9,16 +9,18 @@ diretohanzi="右下左上"
 #右 下 左 上
 di=[0,1,0,-1] 
 dj=[1,0,-1,0]
-mplength,mpwidth=10,10
+mplength,mpwidth=10,30
 applei,applej=4,4
 #mpchar="口回田果　"
 mpchar=["\033[1;44m　\033[0m","\033[1;45m　","\033[1;42m　","\033[1;43m　","\033[1;47m　"]
-showMpTime=0.016 #地图刷新的最短时间
+showMpTime=0 #地图刷新的最短时间
 clearCommand="cls" if os.name=="nt" else "clear"
-
-
+debug=[]
 
 def mptotype(i,j):
+    '''
+    1=头 2=身子 3=果子 4=空气 0=虚空
+    '''
     if (i,j) in snake:
         return 1 if snake.index((i,j))==0 else 2 #snake's head jor body
     elif i==applei and j==applej:
@@ -29,14 +31,31 @@ def mptotype(i,j):
         return 4 #air
 
 def printmp():
+    mp=['',]
     os.system(clearCommand)
-    print(mpchar[0]*(mplength+2))
+    '''
+    print(mpchar[0]*(mpwidth+2))
     for i in range(1,mplength+1):
         print(mpchar[0],end="")
         for j in range(1,mpwidth+1):
             print(mpchar[mptotype(i,j)],end="")
         print(mpchar[0])
-    print(mpchar[0]*(mplength+2))
+    print(mpchar[0]*(mpwidth+2))
+    '''
+    mp[0]=mpchar[0]*(mpwidth+2)
+    for i in range(1,mplength+1):
+        mp.insert(i,mpchar[0])
+        last=""
+        for j in range(1,mpwidth+1):
+            mp[i]=mp[i]+("　" if last==mpchar[mptotype(i,j)] else mpchar[mptotype(i,j)])
+            last=mpchar[mptotype(i,j)]
+        mp[i]=mp[i]+mpchar[0]
+    mp.insert(mplength+1,mpchar[0]*(mpwidth+2))
+    for i in mp:
+        print(i)
+    if len(debug)>0:
+        print(debug)
+
 
 def stallForTime():
     '''
@@ -73,7 +92,7 @@ def stallForTime():
                 continue
             queue.append((nxti,nxtj))
             dict[queue[-1]]=dict[queue[queh]]+1 
-    k,kmax=-1,-1
+    k,kmax=dire,-1
     for i in range(0,4):
         nxti,nxtj=snake[0][0]+di[i],snake[0][1]+dj[i]
         if min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
@@ -87,7 +106,7 @@ def stallForTime():
 def autoChangeDirection():
     vis=[(0,0),snake[0]]
     fa=[0,0]
-    lastdire=[-1,-1]
+    lastdire=[dire,dire]
     target=(applei,applej)
     queh=0
     while queh<len(vis)-1:
@@ -113,6 +132,33 @@ def autoChangeDirection():
     while len(stack) !=0:
         yield stack[-1]
         del stack[-1]
+
+def newAutoChangeDirection():
+    fakeHead=list(snake[0])
+    done=1
+    while done==0:
+        done=0
+        if fakeHead[0]!=applei:
+            if fakeHead[0]>applei and mptotype(fakeHead[0]-1,fakeHead[1])>=3:
+                yield 0
+                done=1
+                fakeHead[0]+=1
+            elif fakeHead[0]<applei and mptotype(fakeHead[0]+1,fakeHead[1])>=3:
+                yield 2
+                done=1
+                fakeHead[0]-=1
+        elif fakeHead[1]!=applej:
+            if fakeHead[1]>applej and mptotype(fakeHead[0],fakeHead[1]+1)>=3:
+                yield 1
+                done=1
+                fakeHead[1]+=1
+            elif fakeHead[1]<applej and mptotype(fakeHead[0],fakeHead[1]-1)>=3:
+                yield 3
+                done=1
+                fakeHead[1]-=1
+    for i in autoChangeDirection():
+        yield i
+
 """
 direlist=[]
 def changeDirection():
@@ -130,7 +176,7 @@ direlist=[]
 def changeDirection():
     global direlist
     if len(direlist) <= 1:
-        g=autoChangeDirection()
+        g=newAutoChangeDirection()
         direlist=[i for i in g]
         if len(direlist)>=1:
             return direlist[0]
@@ -140,20 +186,11 @@ def changeDirection():
         del direlist[0]
         return direlist[0]
     
-
-def putApple():
-    global applei,applej
-    applei,applej=random.randint(1,mplength),random.randint(1,mpwidth)
-    while (applei,applej) in snake:
-        applei,applej=random.randint(1,mplength),random.randint(1,mpwidth)
-
-
-    
 def startGame():
     '''
     开始一局游戏
     '''
-    global dire
+    global dire,applei,applej
     printmp()
     while True:
         tstart=time.time()
@@ -167,7 +204,9 @@ The length of snake is {len(snake)}
             """)
             return
         if nxti==applei and nxtj==applej:
-            putApple()
+            applei,applej=random.randint(1,mplength),random.randint(1,mpwidth)
+            while (applei,applej) in snake:
+                applei,applej=random.randint(1,mplength),random.randint(1,mpwidth)
         else:
             del snake[-1]
         snake.insert(0,(nxti,nxtj))
