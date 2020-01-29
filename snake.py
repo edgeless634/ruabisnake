@@ -9,7 +9,7 @@ diretohanzi="右下左上"
 #右 下 左 上
 di=[0,1,0,-1] 
 dj=[1,0,-1,0]
-mplength,mpwidth=10,30
+mplength,mpwidth=10,20
 applei,applej=4,4
 #mpchar="口回田果　"
 mpchar=["\033[1;44m　\033[0m","\033[1;45m　","\033[1;42m　","\033[1;43m　","\033[1;47m　"]
@@ -204,9 +204,10 @@ The length of snake is {len(snake)}
             """)
             return
         if nxti==applei and nxtj==applej:
-            applei,applej=random.randint(1,mplength),random.randint(1,mpwidth)
-            while (applei,applej) in snake:
-                applei,applej=random.randint(1,mplength),random.randint(1,mpwidth)
+            ki,kj=random.randint(1,mplength),random.randint(1,mpwidth)
+            while (ki,kj) in snake or (ki==nxti and kj==nxtj):
+                ki,kj=random.randint(1,mplength),random.randint(1,mpwidth)
+            applei,applej=ki,kj
         else:
             del snake[-1]
         snake.insert(0,(nxti,nxtj))
