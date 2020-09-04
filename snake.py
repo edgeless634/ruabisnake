@@ -95,28 +95,28 @@ class RobotSnake:
                     done=1
                     fakeHead[1]-=1
         
-        vis=[(0,0),self.body[0]]
+        queue=[(0,0),self.body[0]]
         fa=[0,0]
         lastdire=[dire,dire]
         target=(applei,applej)
         queh=0
-        while queh<len(vis)-1:
+        while queh<len(queue)-1:
             queh+=1
             for i in range(0,4):
-                nxti,nxtj=vis[queh][0]+di[i],vis[queh][1]+dj[i]
-                if (nxti,nxtj) in vis or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
+                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
                     continue
-                vis.append((nxti,nxtj))
+                queue.append((nxti,nxtj))
                 fa.append(queh)
                 lastdire.append(i)
-                if vis[-1]==target:
+                if queue[-1]==target:
                     break
-            if vis[-1]==target:
+            if queue[-1]==target:
                 break
         else:
             return
         stack=[]
-        p=len(vis)-1
+        p=len(queue)-1
         while p>1:
             stack.append(lastdire[p])
             p=fa[p]
