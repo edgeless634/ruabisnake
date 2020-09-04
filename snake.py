@@ -18,10 +18,14 @@ debug=[]
 
 
 class RobotSnake:
-    def __init__(self):
+    def __init__(self, mapToType = None):
         self.body = [(3,1),(2,1),(1,1)]
         self.directionPlan = []
         self.currentDirection = 1
+        if mapToType:
+            self.mapToType = mapToType
+        else:
+            self.mapToType = self.__mapToTypeDefault
     def leftSide(self):
         '''蛇头左侧的坐标'''
         return (self.body[0][0] + di[(self.currentDirection+1)%4],\
@@ -169,7 +173,7 @@ class RobotSnake:
         self.currentDirection = self.directionPlan[0]
         del self.directionPlan[0]
         return self.currentDirection
-    def mapToType(self,ki,kj):
+    def __mapToTypeDefault(self,ki,kj):
         '''
         1=头 2=身子 3=果子 4=空气 0=虚空
         '''
