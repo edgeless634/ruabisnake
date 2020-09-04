@@ -50,7 +50,7 @@ class RobotSnake:
             queh+=1
             for i in range(4):
                 nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
-                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or snake.mapToType(nxti,nxtj)<3:
                     if (nxti,nxtj) in self.body and mxtarget<self.body.index((nxti,nxtj)):
                         target=(nxti,nxtj)
                         mxtarget=self.body.index((nxti,nxtj))
@@ -65,14 +65,14 @@ class RobotSnake:
             queh+=1
             for i in range(4):
                 nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
-                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or snake.mapToType(nxti,nxtj)<3:
                     continue
                 queue.append((nxti,nxtj))
                 dict[queue[-1]]=dict[queue[queh]]+1 
         k,kmax=dire,-1
         for i in range(0,4):
             nxti,nxtj=self.body[0][0]+di[i],self.body[0][1]+dj[i]
-            if min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+            if min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or snake.mapToType(nxti,nxtj)<3:
                 continue
             nxt=(nxti,nxtj)
             if dict.get(nxt,0)>kmax:
@@ -91,20 +91,20 @@ class RobotSnake:
         while done==0:
             done=0
             if fakeHead[0]!=applei:
-                if fakeHead[0]>applei and mptotype(fakeHead[0]-1,fakeHead[1])>=3:
+                if fakeHead[0]>applei and snake.mapToType(fakeHead[0]-1,fakeHead[1])>=3:
                     yield 0
                     done=1
                     fakeHead[0]+=1
-                elif fakeHead[0]<applei and mptotype(fakeHead[0]+1,fakeHead[1])>=3:
+                elif fakeHead[0]<applei and snake.mapToType(fakeHead[0]+1,fakeHead[1])>=3:
                     yield 2
                     done=1
                     fakeHead[0]-=1
             elif fakeHead[1]!=applej:
-                if fakeHead[1]>applej and mptotype(fakeHead[0],fakeHead[1]+1)>=3:
+                if fakeHead[1]>applej and snake.mapToType(fakeHead[0],fakeHead[1]+1)>=3:
                     yield 1
                     done=1
                     fakeHead[1]+=1
-                elif fakeHead[1]<applej and mptotype(fakeHead[0],fakeHead[1]-1)>=3:
+                elif fakeHead[1]<applej and snake.mapToType(fakeHead[0],fakeHead[1]-1)>=3:
                     yield 3
                     done=1
                     fakeHead[1]-=1
@@ -123,7 +123,7 @@ class RobotSnake:
                 if (nxti,nxtj) in queue\
                     or (nxti,nxtj) in vis\
                     or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth\
-                    or mptotype(nxti,nxtj)<3:
+                    or snake.mapToType(nxti,nxtj)<3:
                     continue
                 queue.append((nxti,nxtj))
                 father.append(queh)
@@ -155,29 +155,24 @@ class RobotSnake:
         self.currentDirection = self.directionPlan[0]
         del self.directionPlan[0]
         return self.currentDirection
-
-
+    def mapToType(self,ki,kj):
+        '''
+        1=头 2=身子 3=果子 4=空气 0=虚空
+        '''
+        if (ki,kj) in self.body:
+            return 1 if self.body.index((ki,kj)) == 0 else 2 #蛇的头或身子
+        elif ki == applei and kj == applej:
+            return 3 #苹果
+        elif min(ki,kj) < 1 or ki > mplength or kj > mpwidth:
+            return 0 #空地
+        else:
+            return 4 # 虚空
 
 snake = RobotSnake()
 
-
-def mptotype(i,j):
-    global snake
-    '''
-    1=头 2=身子 3=果子 4=空气 0=虚空
-    '''
-    if (i,j) in snake.body:
-        return 1 if snake.body.index((i,j))==0 else 2 #snake's head jor body
-    elif i==applei and j==applej:
-        return 3 #apple
-    elif min(i,j)<1 or i>mplength or j>mpwidth:
-        return 0 #empty
-    else:
-        return 4 #air
-
 def isBlockEmpty(ki, kj):
     '''检测某个位置是否可以让蛇通过'''
-    return mptotype(ki, kj) >= 3
+    return snake.mapToType(ki, kj) >= 3
 
 def isAllBlockEmpty(*arg):
     '''
@@ -197,8 +192,8 @@ def printmp():
         mp.insert(i,mpchar[0])
         last=""
         for j in range(1,mpwidth+1):
-            mp[i]=mp[i]+("　" if last==mpchar[mptotype(i,j)] else mpchar[mptotype(i,j)])
-            last=mpchar[mptotype(i,j)]
+            mp[i]=mp[i]+("　" if last==mpchar[snake.mapToType(i,j)] else mpchar[snake.mapToType(i,j)])
+            last=mpchar[snake.mapToType(i,j)]
         mp[i]=mp[i]+mpchar[0]
     mp.insert(mplength+1,mpchar[0]*(mpwidth+2))
     for i in mp:
@@ -217,7 +212,7 @@ def startGame():
         dire=snake.newDirection()
         i,j=snake.body[0]
         nxti,nxtj=i+di[dire],j+dj[dire]
-        if mptotype(nxti,nxtj)<3 and snake.body[-1]!=(nxti,nxtj):
+        if snake.mapToType(nxti,nxtj)<3 and snake.body[-1]!=(nxti,nxtj):
             print(f"""
 GAME OVER
 The length of snake is {len(snake.body)} 
