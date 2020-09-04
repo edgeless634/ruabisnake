@@ -20,8 +20,8 @@ debug=[]
 class RobotSnake:
     def __init__(self):
         self.body = [(3,1),(2,1),(1,1)]
-        self.DirectionPlan = []
-
+        self.directionPlan = []
+        self.currentDirection = 1
     def stallForTime(self):
         '''
         在够不到果子的时候苟命
@@ -68,7 +68,7 @@ class RobotSnake:
                 k=i
         return k
 
-    def ChangeDirection(self):
+    def changeDirection(self):
         '''
         自动控制蛇的行动方向简化版
         当可以走直线时优先走
@@ -130,13 +130,14 @@ class RobotSnake:
         while len(stack) !=0:
             yield stack[-1]
             del stack[-1]
+    
     def newDirection(self):
-        if len(self.DirectionPlan) <= 1:
-            self.DirectionPlan = [i for i in self.ChangeDirection()]
-            if len(self.DirectionPlan) == 0:
+        if len(self.directionPlan) <= 1:
+            self.directionPlan = [i for i in self.changeDirection()]
+            if len(self.directionPlan) == 0:
                 return snake.stallForTime()
-        x = self.DirectionPlan[0]
-        del self.DirectionPlan[0]
+        x = self.directionPlan[0]
+        del self.directionPlan[0]
         return x
 
 
@@ -161,15 +162,6 @@ def mptotype(i,j):
 def printmp():
     mp=['',]
     os.system(clearCommand)
-    '''
-    print(mpchar[0]*(mpwidth+2))
-    for i in range(1,mplength+1):
-        print(mpchar[0],end="")
-        for j in range(1,mpwidth+1):
-            print(mpchar[mptotype(i,j)],end="")
-        print(mpchar[0])
-    print(mpchar[0]*(mpwidth+2))
-    '''
     mp[0]=mpchar[0]*(mpwidth+2)
     for i in range(1,mplength+1):
         mp.insert(i,mpchar[0])
