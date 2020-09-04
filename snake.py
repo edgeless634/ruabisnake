@@ -103,7 +103,34 @@ def stallForTime():
             k=i
     return k
 
-def autoChangeDirection():
+def ChangeDirection():
+    '''
+    自动控制蛇的行动方向简化版
+    当可以走直线时优先走
+    '''
+    fakeHead=list(snake[0])
+    done=1
+    while done==0:
+        done=0
+        if fakeHead[0]!=applei:
+            if fakeHead[0]>applei and mptotype(fakeHead[0]-1,fakeHead[1])>=3:
+                yield 0
+                done=1
+                fakeHead[0]+=1
+            elif fakeHead[0]<applei and mptotype(fakeHead[0]+1,fakeHead[1])>=3:
+                yield 2
+                done=1
+                fakeHead[0]-=1
+        elif fakeHead[1]!=applej:
+            if fakeHead[1]>applej and mptotype(fakeHead[0],fakeHead[1]+1)>=3:
+                yield 1
+                done=1
+                fakeHead[1]+=1
+            elif fakeHead[1]<applej and mptotype(fakeHead[0],fakeHead[1]-1)>=3:
+                yield 3
+                done=1
+                fakeHead[1]-=1
+    
     vis=[(0,0),snake[0]]
     fa=[0,0]
     lastdire=[dire,dire]
@@ -133,32 +160,6 @@ def autoChangeDirection():
         yield stack[-1]
         del stack[-1]
 
-def newAutoChangeDirection():
-    fakeHead=list(snake[0])
-    done=1
-    while done==0:
-        done=0
-        if fakeHead[0]!=applei:
-            if fakeHead[0]>applei and mptotype(fakeHead[0]-1,fakeHead[1])>=3:
-                yield 0
-                done=1
-                fakeHead[0]+=1
-            elif fakeHead[0]<applei and mptotype(fakeHead[0]+1,fakeHead[1])>=3:
-                yield 2
-                done=1
-                fakeHead[0]-=1
-        elif fakeHead[1]!=applej:
-            if fakeHead[1]>applej and mptotype(fakeHead[0],fakeHead[1]+1)>=3:
-                yield 1
-                done=1
-                fakeHead[1]+=1
-            elif fakeHead[1]<applej and mptotype(fakeHead[0],fakeHead[1]-1)>=3:
-                yield 3
-                done=1
-                fakeHead[1]-=1
-    for i in autoChangeDirection():
-        yield i
-
 """
 direlist=[]
 def changeDirection():
@@ -176,7 +177,7 @@ direlist=[]
 def changeDirection():
     global direlist
     if len(direlist) <= 1:
-        g=newAutoChangeDirection()
+        g=ChangeDirection()
         direlist=[i for i in g]
         if len(direlist)>=1:
             return direlist[0]
