@@ -20,6 +20,7 @@ debug=[]
 class RobotSnake:
     def __init__(self):
         self.body = [(3,1),(2,1),(1,1)]
+        self.DirectionPlan = []
 
     def stallForTime(self):
         '''
@@ -129,6 +130,16 @@ class RobotSnake:
         while len(stack) !=0:
             yield stack[-1]
             del stack[-1]
+    def newDirection(self):
+        if len(self.DirectionPlan) <= 1:
+            self.DirectionPlan = [i for i in self.ChangeDirection()]
+            if len(self.DirectionPlan) == 0:
+                return snake.stallForTime()
+        x = self.DirectionPlan[0]
+        del self.DirectionPlan[0]
+        return x
+
+
 
 snake = RobotSnake()
 
@@ -173,33 +184,6 @@ def printmp():
     if len(debug)>0:
         print(debug)
 
-"""
-direlist=[]
-def changeDirection():
-    global direlist
-    g=autoChangeDirection()
-    direlist=[i for i in g]
-    if len(direlist)>=1:
-        return direlist[0]
-    else:
-        return stallForTime()
-    del direlist[0]
-    return direlist[0]
-"""
-direlist=[]
-def changeDirection():
-    global direlist
-    if len(direlist) <= 1:
-        g=snake.ChangeDirection()
-        direlist=[i for i in g]
-        if len(direlist)>=1:
-            return direlist[0]
-        else:
-            return snake.stallForTime()
-    else:
-        del direlist[0]
-        return direlist[0]
-    
 def startGame():
     '''
     开始一局游戏
@@ -208,7 +192,7 @@ def startGame():
     printmp()
     while True:
         tstart=time.time()
-        dire=changeDirection()
+        dire=snake.newDirection()
         i,j=snake.body[0]
         nxti,nxtj=i+di[dire],j+dj[dire]
         if mptotype(nxti,nxtj)<3 and snake.body[-1]!=(nxti,nxtj):
