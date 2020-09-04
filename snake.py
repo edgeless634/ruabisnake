@@ -147,7 +147,8 @@ class RobotSnake:
         self.directionPlan = [i for i in self.changeDirection()]
     
     def newDirection(self):
-        if len(self.directionPlan) <= 1:
+        if len(self.directionPlan) <= 1\
+            or isAllBlockEmpty(self.ahead(), self.leftSide(), self.rightSide()):
             self.directionPlan = [i for i in self.changeDirection()]
             if len(self.directionPlan) == 0:
                 return snake.stallForTime()
