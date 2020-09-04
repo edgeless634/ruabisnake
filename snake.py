@@ -145,6 +145,7 @@ class RobotSnake:
     
     def refreshPlan(self):
         self.directionPlan = [i for i in self.changeDirection()]
+    
     def newDirection(self):
         if len(self.directionPlan) <= 1:
             self.directionPlan = [i for i in self.changeDirection()]
@@ -172,6 +173,10 @@ def mptotype(i,j):
         return 0 #empty
     else:
         return 4 #air
+
+def isBlockEmpty(ki, kj):
+    '''检测某个位置是否可以让蛇通过'''
+    return mptotype(ki, kj) >= 3
 
 def printmp():
     mp=['',]
