@@ -178,6 +178,16 @@ def isBlockEmpty(ki, kj):
     '''检测某个位置是否可以让蛇通过'''
     return mptotype(ki, kj) >= 3
 
+def isAllBlockEmpty(*arg):
+    '''
+    检测某些位置是否可以让蛇通过
+    用例:isAllBlockEmpty((1,1), (2,2))
+    '''
+    for i in arg:
+        if not isBlockEmpty(*i):
+            return False
+    return True
+
 def printmp():
     mp=['',]
     os.system(clearCommand)
