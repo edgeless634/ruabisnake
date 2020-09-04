@@ -22,6 +22,15 @@ class RobotSnake:
         self.body = [(3,1),(2,1),(1,1)]
         self.directionPlan = []
         self.currentDirection = 1
+    def leftSide(self):
+        return (self.body[0][0] + di[(self.currentDirection+1)%4],\
+            self.body[0][1] + dj[(self.currentDirection+1)%4])
+    def rightSide(self):
+        return (self.body[0][0] + di[(self.currentDirection+3)%4],\
+            self.body[0][1] + dj[(self.currentDirection+3)%4])
+    def ahead(self):
+        return (self.body[0][0] + di[self.currentDirection],\
+            self.body[0][1] + dj[self.currentDirection])
     def stallForTime(self):
         '''
         在够不到果子的时候苟命
@@ -136,9 +145,9 @@ class RobotSnake:
             self.directionPlan = [i for i in self.changeDirection()]
             if len(self.directionPlan) == 0:
                 return snake.stallForTime()
-        x = self.directionPlan[0]
+        self.currentDirection = self.directionPlan[0]
         del self.directionPlan[0]
-        return x
+        return self.currentDirection
 
 
 
