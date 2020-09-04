@@ -23,12 +23,15 @@ class RobotSnake:
         self.directionPlan = []
         self.currentDirection = 1
     def leftSide(self):
+        '''蛇头左侧的坐标'''
         return (self.body[0][0] + di[(self.currentDirection+1)%4],\
             self.body[0][1] + dj[(self.currentDirection+1)%4])
     def rightSide(self):
+        '''蛇头右侧的坐标'''
         return (self.body[0][0] + di[(self.currentDirection+3)%4],\
             self.body[0][1] + dj[(self.currentDirection+3)%4])
     def ahead(self):
+        '''蛇头前方的坐标'''
         return (self.body[0][0] + di[self.currentDirection],\
             self.body[0][1] + dj[self.currentDirection])
     def stallForTime(self):
@@ -140,6 +143,8 @@ class RobotSnake:
             yield stack[-1]
             del stack[-1]
     
+    def refreshPlan(self):
+        self.directionPlan = [i for i in self.changeDirection()]
     def newDirection(self):
         if len(self.directionPlan) <= 1:
             self.directionPlan = [i for i in self.changeDirection()]
