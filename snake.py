@@ -74,6 +74,7 @@ class RobotSnake:
         '''
         fakeHead=list(self.body[0])
         done=1
+        vis = []
         while done==0:
             done=0
             if fakeHead[0]!=applei:
@@ -94,9 +95,11 @@ class RobotSnake:
                     yield 3
                     done=1
                     fakeHead[1]-=1
+            if done == 1:
+                vis.append(tuple(fakeHead))
         
         queue=[(0,0),self.body[0]]
-        fa=[0,0]
+        father=[0,0]
         lastdire=[dire,dire]
         target=(applei,applej)
         queh=0
@@ -104,10 +107,13 @@ class RobotSnake:
             queh+=1
             for i in range(0,4):
                 nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
-                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                if (nxti,nxtj) in queue\
+                    or (nxti,nxtj) in vis\
+                    or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth\
+                    or mptotype(nxti,nxtj)<3:
                     continue
                 queue.append((nxti,nxtj))
-                fa.append(queh)
+                father.append(queh)
                 lastdire.append(i)
                 if queue[-1]==target:
                     break
@@ -119,7 +125,7 @@ class RobotSnake:
         p=len(queue)-1
         while p>1:
             stack.append(lastdire[p])
-            p=fa[p]
+            p=father[p]
         while len(stack) !=0:
             yield stack[-1]
             del stack[-1]
