@@ -3,7 +3,6 @@
 import os
 import time
 import random
-snake=[(3,1),(2,1),(1,1)]
 dire=1
 diretohanzi="右下左上"
 #右 下 左 上
@@ -17,12 +16,124 @@ showMpTime=0 #地图刷新的最短时间
 clearCommand="cls" if os.name=="nt" else "clear"
 debug=[]
 
+
+class RobotSnake:
+    def __init__(self):
+        self.body = [(3,1),(2,1),(1,1)]
+
+    def stallForTime(self):
+        '''
+        在够不到果子的时候苟命
+        基本思路:
+        1.找到头部能够得到,且离尾部最近的身体
+        2.计算那段身子到周围几个空位的距离
+        3.往离那段身子最远的空位走(尽量贴墙)
+        '''
+        queue=[(0,0),self.body[0]]
+        queh=0
+        target=(0,0)
+        mxtarget=0
+        while queh<len(queue)-1:
+            queh+=1
+            for i in range(4):
+                nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
+                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                    if (nxti,nxtj) in self.body and mxtarget<self.body.index((nxti,nxtj)):
+                        target=(nxti,nxtj)
+                        mxtarget=self.body.index((nxti,nxtj))
+                    continue
+                if nxti==applei and nxtj==applej:
+                    return -1
+                queue.append((nxti,nxtj))
+        dict={target:0}
+        queue=[(0,0),target]
+        queh=0
+        while queh<len(queue)-1:
+            queh+=1
+            for i in range(4):
+                nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
+                if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                    continue
+                queue.append((nxti,nxtj))
+                dict[queue[-1]]=dict[queue[queh]]+1 
+        k,kmax=dire,-1
+        for i in range(0,4):
+            nxti,nxtj=self.body[0][0]+di[i],self.body[0][1]+dj[i]
+            if min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                continue
+            nxt=(nxti,nxtj)
+            if dict.get(nxt,0)>kmax:
+                kmax=dict.get(nxt,0)
+                k=i
+        return k
+
+    def ChangeDirection(self):
+        '''
+        自动控制蛇的行动方向简化版
+        当可以走直线时优先走
+        '''
+        fakeHead=list(self.body[0])
+        done=1
+        while done==0:
+            done=0
+            if fakeHead[0]!=applei:
+                if fakeHead[0]>applei and mptotype(fakeHead[0]-1,fakeHead[1])>=3:
+                    yield 0
+                    done=1
+                    fakeHead[0]+=1
+                elif fakeHead[0]<applei and mptotype(fakeHead[0]+1,fakeHead[1])>=3:
+                    yield 2
+                    done=1
+                    fakeHead[0]-=1
+            elif fakeHead[1]!=applej:
+                if fakeHead[1]>applej and mptotype(fakeHead[0],fakeHead[1]+1)>=3:
+                    yield 1
+                    done=1
+                    fakeHead[1]+=1
+                elif fakeHead[1]<applej and mptotype(fakeHead[0],fakeHead[1]-1)>=3:
+                    yield 3
+                    done=1
+                    fakeHead[1]-=1
+        
+        vis=[(0,0),self.body[0]]
+        fa=[0,0]
+        lastdire=[dire,dire]
+        target=(applei,applej)
+        queh=0
+        while queh<len(vis)-1:
+            queh+=1
+            for i in range(0,4):
+                nxti,nxtj=vis[queh][0]+di[i],vis[queh][1]+dj[i]
+                if (nxti,nxtj) in vis or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
+                    continue
+                vis.append((nxti,nxtj))
+                fa.append(queh)
+                lastdire.append(i)
+                if vis[-1]==target:
+                    break
+            if vis[-1]==target:
+                break
+        else:
+            return
+        stack=[]
+        p=len(vis)-1
+        while p>1:
+            stack.append(lastdire[p])
+            p=fa[p]
+        while len(stack) !=0:
+            yield stack[-1]
+            del stack[-1]
+
+snake = RobotSnake()
+
+
 def mptotype(i,j):
+    global snake
     '''
     1=头 2=身子 3=果子 4=空气 0=虚空
     '''
-    if (i,j) in snake:
-        return 1 if snake.index((i,j))==0 else 2 #snake's head jor body
+    if (i,j) in snake.body:
+        return 1 if snake.body.index((i,j))==0 else 2 #snake's head jor body
     elif i==applei and j==applej:
         return 3 #apple
     elif min(i,j)<1 or i>mplength or j>mpwidth:
@@ -56,110 +167,6 @@ def printmp():
     if len(debug)>0:
         print(debug)
 
-
-def stallForTime():
-    '''
-    在够不到果子的时候苟命
-    基本思路:
-    1.找到头部能够得到,且离尾部最近的身体
-    2.计算那段身子到周围几个空位的距离
-    3.往离那段身子最远的空位走(尽量贴墙)
-    '''
-    queue=[(0,0),snake[0]]
-    queh=0
-    target=(0,0)
-    mxtarget=0
-    while queh<len(queue)-1:
-        queh+=1
-        for i in range(4):
-            nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
-            if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
-                if (nxti,nxtj) in snake and mxtarget<snake.index((nxti,nxtj)):
-                    target=(nxti,nxtj)
-                    mxtarget=snake.index((nxti,nxtj))
-                continue
-            if nxti==applei and nxtj==applej:
-                return -1
-            queue.append((nxti,nxtj))
-    dict={target:0}
-    queue=[(0,0),target]
-    queh=0
-    while queh<len(queue)-1:
-        queh+=1
-        for i in range(4):
-            nxti,nxtj=queue[queh][0]+di[i],queue[queh][1]+dj[i]
-            if (nxti,nxtj) in queue or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
-                continue
-            queue.append((nxti,nxtj))
-            dict[queue[-1]]=dict[queue[queh]]+1 
-    k,kmax=dire,-1
-    for i in range(0,4):
-        nxti,nxtj=snake[0][0]+di[i],snake[0][1]+dj[i]
-        if min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
-            continue
-        nxt=(nxti,nxtj)
-        if dict.get(nxt,0)>kmax:
-            kmax=dict.get(nxt,0)
-            k=i
-    return k
-
-def ChangeDirection():
-    '''
-    自动控制蛇的行动方向简化版
-    当可以走直线时优先走
-    '''
-    fakeHead=list(snake[0])
-    done=1
-    while done==0:
-        done=0
-        if fakeHead[0]!=applei:
-            if fakeHead[0]>applei and mptotype(fakeHead[0]-1,fakeHead[1])>=3:
-                yield 0
-                done=1
-                fakeHead[0]+=1
-            elif fakeHead[0]<applei and mptotype(fakeHead[0]+1,fakeHead[1])>=3:
-                yield 2
-                done=1
-                fakeHead[0]-=1
-        elif fakeHead[1]!=applej:
-            if fakeHead[1]>applej and mptotype(fakeHead[0],fakeHead[1]+1)>=3:
-                yield 1
-                done=1
-                fakeHead[1]+=1
-            elif fakeHead[1]<applej and mptotype(fakeHead[0],fakeHead[1]-1)>=3:
-                yield 3
-                done=1
-                fakeHead[1]-=1
-    
-    vis=[(0,0),snake[0]]
-    fa=[0,0]
-    lastdire=[dire,dire]
-    target=(applei,applej)
-    queh=0
-    while queh<len(vis)-1:
-        queh+=1
-        for i in range(0,4):
-            nxti,nxtj=vis[queh][0]+di[i],vis[queh][1]+dj[i]
-            if (nxti,nxtj) in vis or min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or mptotype(nxti,nxtj)<3:
-                continue
-            vis.append((nxti,nxtj))
-            fa.append(queh)
-            lastdire.append(i)
-            if vis[-1]==target:
-                break
-        if vis[-1]==target:
-            break
-    else:
-        return
-    stack=[]
-    p=len(vis)-1
-    while p>1:
-        stack.append(lastdire[p])
-        p=fa[p]
-    while len(stack) !=0:
-        yield stack[-1]
-        del stack[-1]
-
 """
 direlist=[]
 def changeDirection():
@@ -177,12 +184,12 @@ direlist=[]
 def changeDirection():
     global direlist
     if len(direlist) <= 1:
-        g=ChangeDirection()
+        g=snake.ChangeDirection()
         direlist=[i for i in g]
         if len(direlist)>=1:
             return direlist[0]
         else:
-            return stallForTime()
+            return snake.stallForTime()
     else:
         del direlist[0]
         return direlist[0]
@@ -191,27 +198,27 @@ def startGame():
     '''
     开始一局游戏
     '''
-    global dire,applei,applej
+    global dire,applei,applej,snake
     printmp()
     while True:
         tstart=time.time()
         dire=changeDirection()
-        i,j=snake[0]
+        i,j=snake.body[0]
         nxti,nxtj=i+di[dire],j+dj[dire]
-        if mptotype(nxti,nxtj)<3 and snake[-1]!=(nxti,nxtj):
+        if mptotype(nxti,nxtj)<3 and snake.body[-1]!=(nxti,nxtj):
             print(f"""
 GAME OVER
-The length of snake is {len(snake)} 
+The length of snake is {len(snake.body)} 
             """)
             return
         if nxti==applei and nxtj==applej:
             ki,kj=random.randint(1,mplength),random.randint(1,mpwidth)
-            while (ki,kj) in snake or (ki==nxti and kj==nxtj):
+            while (ki,kj) in snake.body or (ki==nxti and kj==nxtj):
                 ki,kj=random.randint(1,mplength),random.randint(1,mpwidth)
             applei,applej=ki,kj
         else:
-            del snake[-1]
-        snake.insert(0,(nxti,nxtj))
+            del snake.body[-1]
+        snake.body.insert(0,(nxti,nxtj))
         printmp()
         time.sleep(showMpTime+time.time()-tstart)
 
@@ -223,10 +230,10 @@ def infinityMode():
     global snake,applei,applej,dire
     while True:
         startGame()
-        totalLength+=len(snake)
+        totalLength+=len(snake.body)
         gameCount+=1
         print(f"已经进行了{gameCount}局,平均长度是{totalLength/gameCount}")
-        snake=[(3,1),(2,1),(1,1)]
+        snake=RobotSnake()
         dire=1
         applei,applej=4,4
         time.sleep(3)
