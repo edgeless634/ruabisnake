@@ -46,6 +46,7 @@ class RobotSnake:
         queh=0
         target=(0,0)
         mxtarget=0
+        # 1.找到头部能够得到,且离尾部最近的身体(target)
         while queh<len(queue)-1:
             queh+=1
             for i in range(4):
@@ -61,6 +62,7 @@ class RobotSnake:
         dict={target:0}
         queue=[(0,0),target]
         queh=0
+        #2.计算那段身子到周围几个空位的距离(dict[i])
         while queh<len(queue)-1:
             queh+=1
             for i in range(4):
@@ -70,6 +72,7 @@ class RobotSnake:
                 queue.append((nxti,nxtj))
                 dict[queue[-1]]=dict[queue[queh]]+1 
         k,kmax=dire,-1
+        #3.往离那段身子最远的空位走(尽量贴墙)(k)
         for i in range(0,4):
             nxti,nxtj=self.body[0][0]+di[i],self.body[0][1]+dj[i]
             if min(nxti,nxtj)<1 or nxti>mplength or nxtj>mpwidth or snake.mapToType(nxti,nxtj)<3:
@@ -88,6 +91,7 @@ class RobotSnake:
         fakeHead=list(self.body[0])
         done=1
         vis = []
+        # 先走直线
         while done==0:
             done=0
             if fakeHead[0]!=applei:
@@ -110,7 +114,7 @@ class RobotSnake:
                     fakeHead[1]-=1
             if done == 1:
                 vis.append(tuple(fakeHead))
-        
+        # 再广搜出路径
         queue=[(0,0),self.body[0]]
         father=[0,0]
         lastdire=[dire,dire]
@@ -144,14 +148,24 @@ class RobotSnake:
             del stack[-1]
     
     def refreshPlan(self):
+        '''强制刷新计划表'''
         self.directionPlan = [i for i in self.changeDirection()]
     
     def newDirection(self):
+        '''
+        告知蛇头前进的方向
+        返回一个代表方向的数字，其中右=0 下=1 左=2 上=3
+        # 注意：
+        # 这个函数提供每一步（每一帧）的前进方向
+        '''
+        # 如果计划表为空或蛇头三面为空，就更新计划表
         if len(self.directionPlan) <= 1\
             or isAllBlockEmpty(self.ahead(), self.leftSide(), self.rightSide()):
             self.directionPlan = [i for i in self.changeDirection()]
+            # 如果苹果被蛇身挡住，无法直接吃到苹果
             if len(self.directionPlan) == 0:
                 return snake.stallForTime()
+        # 执行计划表中的下一步
         self.currentDirection = self.directionPlan[0]
         del self.directionPlan[0]
         return self.currentDirection
@@ -185,9 +199,11 @@ def isAllBlockEmpty(*arg):
     return True
 
 def printmp():
+    '''打印地图'''
     mp=['',]
     os.system(clearCommand)
     mp[0]=mpchar[0]*(mpwidth+2)
+
     for i in range(1,mplength+1):
         mp.insert(i,mpchar[0])
         last=""
@@ -196,6 +212,7 @@ def printmp():
             last=mpchar[snake.mapToType(i,j)]
         mp[i]=mp[i]+mpchar[0]
     mp.insert(mplength+1,mpchar[0]*(mpwidth+2))
+
     for i in mp:
         print(i)
     if len(debug)>0:
@@ -208,16 +225,20 @@ def startGame():
     global dire,applei,applej,snake
     printmp()
     while True:
+        # 让蛇头转向
         tstart=time.time()
         dire=snake.newDirection()
         i,j=snake.body[0]
         nxti,nxtj=i+di[dire],j+dj[dire]
+        # 判断蛇是否死亡或吃到苹果
+        # ↓如果死亡↓
         if snake.mapToType(nxti,nxtj)<3 and snake.body[-1]!=(nxti,nxtj):
             print(f"""
 GAME OVER
 The length of snake is {len(snake.body)} 
             """)
             return
+        # ↓如果吃到苹果↓
         if nxti==applei and nxtj==applej:
             ki,kj=random.randint(1,mplength),random.randint(1,mpwidth)
             while (ki,kj) in snake.body or (ki==nxti and kj==nxtj):
@@ -225,13 +246,17 @@ The length of snake is {len(snake.body)}
             applei,applej=ki,kj
         else:
             del snake.body[-1]
+        # 让蛇前进一步
         snake.body.insert(0,(nxti,nxtj))
+        # 打印地图
         printmp()
+        # 暂停，让地图展示在屏幕上
         time.sleep(showMpTime+time.time()-tstart)
 
 #startGame()
 
 def infinityMode():
+    '''无限进行游戏'''
     gameCount=0
     totalLength=0
     global snake,applei,applej,dire
