@@ -15,6 +15,32 @@ mpchar=["\033[1;44m　\033[0m","\033[1;45m　","\033[1;42m　","\033[1;43m　","
 showMpTime=0 #地图刷新的最短时间
 clearCommand="cls" if os.name=="nt" else "clear"
 debug=[]
+class Heap:
+    '''小根堆'''
+    def __init__(self):
+        self.a = [0, ]
+    def push(self, x):
+        self.a.append(x)
+        i, j = len(self.a)-1, (len(self.a)-1)//2
+        while j >= 1 and self.a[i] < self.a[j]:
+            self.a[i], self.a[j] = self.a[j], self.a[i]
+            i, j = j, j/2
+    def pop(self):
+        if len(self.a) <= 1:
+            print("ERROR:heap is empty")
+            return None
+        x = self.a[1]
+        self.a[1], self.a[-1] = self.a[-1], self.a[1]
+        del self.a[-1]
+        i, j = 1, 2
+        if j < len(self.a)-1 and self.a[j] > self.a[j+1]:
+            j += 1
+        while j < len(self.a) and self.a[i] > self.a[j]:
+            self.a[i], self.a[j] = self.a[j], self.a[i]
+            i, j = j, j*2
+            if j < len(self.a)-1 and self.a[j] > self.a[j+1]:
+                j += 1
+        return x
 
 
 class RobotSnake:
@@ -95,6 +121,7 @@ class RobotSnake:
         fakeHead=list(self.body[0])
         done=1
         vis = []
+        '''
         # 先走直线
         while done==0:
             done=0
@@ -118,6 +145,7 @@ class RobotSnake:
                     fakeHead[1]-=1
             if done == 1:
                 vis.append(tuple(fakeHead))
+        '''
         # 再广搜出路径
         queue=[(0,0),self.body[0]]
         father=[0,0]
